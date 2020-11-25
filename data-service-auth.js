@@ -15,4 +15,4 @@ var userSchema = new Schema({
 
 let User;
 
-var Company = mongoose.model("web322_companies", companySchema);
+//var Company = mongoose.model("web322_companies", companySchema);
