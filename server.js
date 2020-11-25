@@ -6,9 +6,12 @@
 *
 * Name: Jinseo Cha Student ID: 063262141 Date: Nov 22th,2020
 *
-* Online (Heroku) Link: https://glacial-coast-63891.herokuapp.com/
+* Online (Heroku) Link: https://stormy-brook-59477.herokuapp.com/
 *
 ********************************************************************************/ 
+//var dataServiceAuth = require("data-service-auth.js");
+var dataServiceAuth = require("./data-service-auth.js");
+
 var path = require("path");
 var express = require("express");
 var multer = require("multer");
