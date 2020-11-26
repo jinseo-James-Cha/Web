@@ -325,11 +325,23 @@ app.get("*", function(req, res){
 
 
 
-dataService.initialize().then((data)=>{
-    //console.log(data);
-    app.listen(HTTP_PORT, onhttpStart);
-}).catch(function(reason){
-    console.log(reason);
+dataService.initialize()
+.then(function(){
+    app.listen(HTTP_PORT, function(){
+    console.log("app listening on: " + HTTP_PORT)
+    });
+}).catch(function(err){
+    console.log("unable to start server: " + err);
+});
+
+dataService.initialize()
+.then(dataServiceAuth.initialize)
+.then(function(){
+    app.listen(HTTP_PORT, function(){
+    console.log("app listening on: " + HTTP_PORT)
+    });
+}).catch(function(err){
+    console.log("unable to start server: " + err);
 });
 
 
