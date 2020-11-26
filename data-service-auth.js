@@ -1,3 +1,4 @@
+
 var mongoose = require("mongoose");
 var Schema = mongoose.Schema;
 
@@ -30,23 +31,25 @@ module.exports.initialize = function() {
         
         var pass = encodeURIComponent("Wlstjck2!"); // this step is needed if there are special characters in your password, ie "$"
 
-        var uri = "mongodb://dbUser:Wlstjck2!@senecaweb.03yn7.mongodb.net/web322_week8?retryWrites=true&w=majority";
+        var uri = "mongodb+srv://dbUser:Wlstjck2!@senecaweb.03yn7.mongodb.net/web322_week8?retryWrites=true&w=majority";
         
-        mongoose.connect(uri, {useNewUrlParser : true, useUnifiedTopology: true}, function(error){
+        mongoose.connect(`mongodb+srv://dbUser:${pass}@senecaweb.03yn7.mongodb.net/web322_week8?retryWrites=true&w=majority`, {useNewUrlParser : true, useUnifiedTopology: true}, function(error){
             
             //above line is error//
-            console.log("JAMES");
+            //console.log("JAMES");
             if(error) reject(error);
             else {
                 console.log("connection successful");
 
-                var db = mongoose.createConnection(`mongodb://dbUser:${pass}@senecaweb.03yn7.mongodb.net/web322_week8?retryWrites=true&w=majority`);
+                var db = mongoose.createConnection(`mongodb+srv://dbUser:${pass}@senecaweb.03yn7.mongodb.net/web322_week8?retryWrites=true&w=majority`,{useNewUrlParser : true, useUnifiedTopology: true});
                 
                 db.on('error', (err)=>{
+                    
                     reject(err);
                 });
                   
                 db.once('open', ()=>{
+                    
                     User = db.model("users", userSchema);
                     resolve();
                 });

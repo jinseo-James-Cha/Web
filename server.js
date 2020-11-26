@@ -9,6 +9,7 @@
 * Online (Heroku) Link: https://stormy-brook-59477.herokuapp.com/
 *
 ********************************************************************************/ 
+var clientSessions = require("client-sessions");
 //var dataServiceAuth = require("data-service-auth.js");
 var dataServiceAuth = require("./data-service-auth.js");
 
@@ -41,8 +42,12 @@ app.use(function(req,res,next){
 });
 
 
-
-
+app.use(clientSessions({
+    cookieName : "session",
+    secret: "assignment6_bti325",
+    duration : 2 * 60 * 1000,
+    activeDuration : 1000 * 60
+}));
 
 app.engine(".hbs", exphbs({
     extname:".hbs" ,
@@ -325,23 +330,23 @@ app.get("*", function(req, res){
 
 
 
-dataService.initialize()
+/*dataService.initialize()
 .then(function(){
     app.listen(HTTP_PORT, function(){
     console.log("app listening on: " + HTTP_PORT)
     });
 }).catch(function(err){
-    console.log("unable to start server: " + err);
+    console.log("1unable to start server: " + err);
 });
-
+*/
 dataService.initialize()
 .then(dataServiceAuth.initialize)
 .then(function(){
-    app.listen(HTTP_PORT, function(){
-    console.log("app listening on: " + HTTP_PORT)
-    });
+ app.listen(HTTP_PORT, function(){
+ console.log("app listening on: " + HTTP_PORT)
+ });
 }).catch(function(err){
-    console.log("unable to start server: " + err);
+ console.log("unable to start server: " + err);
 });
 
 
