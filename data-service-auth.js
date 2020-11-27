@@ -66,9 +66,9 @@ module.exports.initialize = function() {
 module.exports.registerUser = function(userData){
     return new Promise(function (resolve, reject) {
         
-        if(!userData.userName || userData.userName.trim ===''
-           || !userData.password || userData.password.trim ===''
-           || !userData.password2 || userData.password2.trim ===''){
+        if(!userData.userName || userData.userName.trim().length ==0
+           || !userData.password || userData.password.trim().length == 0
+           || !userData.password2 || userData.password2.trim().length ==0){
                reject("Error:user name or password cannot be empty of only white spaces! ");
         }
         else if(userData.password != userData.password2){

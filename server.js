@@ -43,11 +43,24 @@ app.use(function(req,res,next){
 
 
 app.use(clientSessions({
-    cookieName : "session",
+    cookieName : "userSession",
     secret: "assignment6_bti325",
     duration : 2 * 60 * 1000,
     activeDuration : 1000 * 60
 }));
+
+app.use(function(req, res, next) {
+    res.locals.session = req.session;
+    next();
+});
+
+// middleware helper function
+function ensureLogin(req, res, next)
+{
+    if (!req.userSession.user1) {
+        res.redirect("/login");
+    } else { next();}
+}
 
 app.engine(".hbs", exphbs({
     extname:".hbs" ,
@@ -82,8 +95,60 @@ app.get("/about", function(req, res){
     res.render("about");
     //res.sendFile(path.join(__dirname + "/views/about.html"));
 });
+////////////A6///////////////
+app.get("/login", (req, res)=>{
+    res.render("login");
+});
+
+app.get("/register", (req, res)=>{
+    res.render("register");
+});
+
+app.post("/register", (req, res)=>{
+    ensureLogin(req, res, next);
+    
+    
+    dataServiceAuth.registerUser(req.body).then((data)=>{
+        res.render("register", {successMessage: "User created"});
+    }).catch((err)=>{
+        res.render("register", {errorMessage: err, userName: req.body.userName});
+    });
+    
+});
+
+app.post("/login", (req, res)=>{
+    req.body.userAgent = req.get('User-Agent');
+
+    
+
+
+    dataServiceAuth.checkUser(req.body).then((user) => {
+        req.session.user = {
+            userName: user.userName, 
+            email:user.email, 
+            loginHistory: user.loginHistory 
+        }
+            res.redirect('/employees');
+    }).catch((err) =>{
+        res.render("login", {errorMessage: err, userName: req.body.userName});
+    });
+});
+
+app.get("/logout", (req, res)=>{
+    req.userSession.reset();
+    res.redirect("/");
+});
+
+app.get("/userHistory", (req, res)=>{
+    ensureLogin(req, res, next);
+    res.render("userHistory");
+});
+
 /////////A3 new routes//////////
 app.get("/employees/add", function(req, res){
+
+    ensureLogin(req, res, next);
+
     dataService.getDepartments().then((data)=>{
         if(data.length > 0 ){
             res.render("addEmployee",{departments: data});
@@ -100,11 +165,13 @@ app.get("/employees/add", function(req, res){
 });
 
 app.get("/departments/add", function(req, res){
+    ensureLogin(req, res, next);
     res.render("addDepartment");
     //res.sendFile(path.join(__dirname + "/views/addEmployee.html"));
 });
 
 app.get("/images/add", function(req, res){
+    ensureLogin(req, res, next);
     res.render("addImage");
     //res.sendFile(path.join(__dirname + "/views/addImage.html"));
 });
@@ -112,6 +179,7 @@ app.get("/images/add", function(req, res){
 
 
 app.get("/employees", function(req, res){
+    ensureLogin(req, res, next);
     
     if(req.query.status){
         
@@ -162,6 +230,7 @@ app.get("/employees", function(req, res){
 });
 */
 app.get("/employee/:empNum", (req, res) => {
+    ensureLogin(req, res, next);
     // initialize an empty object to store the values
     let viewData = {};
     
@@ -198,6 +267,7 @@ app.get("/employee/:empNum", (req, res) => {
 
 
 app.get('/department/:departmentId', function(req, res){
+    ensureLogin(req, res, next);
     dataService.getDepartmentById(req.params.departmentId).then((data)=>{
         if(!data){
             res.status(404).send("Department Not Found without data");
@@ -220,6 +290,7 @@ app.get("/managers", function(req, res){
 });
 */
 app.get("/departments", function(req, res){
+    ensureLogin(req, res, next);
     dataService.getDepartments().then((data)=>{
         if(data.length > 0 ){
             res.render("departments",{departments: data});
@@ -244,13 +315,14 @@ const upload = multer({ storage: storage });
 
 ///adding post route///
 app.post("/images/add", upload.single("imageFile"), (req, res) => {
+    ensureLogin(req, res, next);
     res.redirect("./");
     
 });
 
 ///adding get route, using fs module
 app.get("/images", function(req, res){
-    
+    ensureLogin(req, res, next);
     fs.readdir("./public/images/uploaded", function(err, items) {
     
     //var imagesobj = {};
@@ -263,7 +335,7 @@ app.get("/images", function(req, res){
 //adding Post route in part3
 
 app.post("/employees/add", (req, res)=>{
-    
+    ensureLogin(req, res, next);
     const employeeData = req.body;
     
     dataService.addEmployee(employeeData).then((data)=>{
@@ -275,7 +347,7 @@ app.post("/employees/add", (req, res)=>{
 });
 
 app.post("/departments/add", (req, res)=>{
-    
+    ensureLogin(req, res, next);
     //const employeeData = req.body;
     
     dataService.addDepartment(req.body).then((data)=>{
@@ -288,7 +360,7 @@ app.post("/departments/add", (req, res)=>{
 
 //update employee
 app.post("/employee/update", (req, res) => {
-
+    ensureLogin(req, res, next);
     //console.log(req.body);
 
     dataService.updateEmployee(req.body).then(()=>{
@@ -300,7 +372,7 @@ app.post("/employee/update", (req, res) => {
 });
 
 app.post("/department/update", (req, res) => {
-
+    ensureLogin(req, res, next);
     //console.log(req.body);
 
     dataService.updateDepartment(req.body).then(()=>{
@@ -312,7 +384,7 @@ app.post("/department/update", (req, res) => {
 });
 
 app.get("/employees/delete/:empNum", (req, res) => {
-    
+    ensureLogin(req, res, next);
     dataService.deleteEmployeeByNum(req.params.empNum).then((data) => {
         
             res.redirect("/employees");
