@@ -107,8 +107,8 @@ app.get("/register", (req, res)=>{
     res.render("register");
 });
 
-app.post("/register", (req, res, next)=>{
-    ensureLogin(req, res);
+app.post("/register", (req, res)=>{
+    //ensureLogin(req, res);
     
     dataServiceAuth.registerUser(req.body).then((data)=>{
         res.render("register", {successMessage: "User created"});

@@ -70,6 +70,7 @@ module.exports.initialize = function() {
 module.exports.registerUser = function(userData){
     return new Promise(function (resolve, reject) {
         
+        
         if(!userData.userName || userData.userName.trim().length ==0
            || !userData.password || userData.password.trim().length == 0
            || !userData.password2 || userData.password2.trim().length ==0){
@@ -79,17 +80,21 @@ module.exports.registerUser = function(userData){
             reject("Error: Passwords do not match");
         }
         else{
-
+            
             bcrypt.genSalt(10, function(err, salt) { 
-                bcrypt.hash(userData.password, salt, function(err, hashValue) { 
-                    userData.password = hashValue;
-                }).catch(err=>{
-                    console.log(err);
-                    reject("There was an error encrypting the password");
+                console.log("James1");
+                bcrypt.hash(userData.password, salt, function(err, hashValue) {
+                    console.log("James2");
+                    if(err) {
+                        reject("There was an error encrypting the password");
+                    }
+                    else{
+                        userData.password = hashValue;
+                    }
                 });
-           }).catch(err=>{
-               console.log(err);
-               reject("There was an error encrypting the password");
+                if(err) {
+                    reject("There was an error encrypting the password");
+                }
            });
 
             let newUser = new User(userData);
