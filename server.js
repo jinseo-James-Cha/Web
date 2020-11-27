@@ -49,12 +49,14 @@ app.use(clientSessions({
     activeDuration : 1000 * 60
 }));
 
+
 app.use(function(req, res, next) {
     res.locals.session = req.session;
     next();
 });
 
 // middleware helper function
+
 function ensureLogin(req, res, next)
 {
     if (!req.userSession.user1) {
@@ -96,6 +98,7 @@ app.get("/about", function(req, res){
     //res.sendFile(path.join(__dirname + "/views/about.html"));
 });
 ////////////A6///////////////
+
 app.get("/login", (req, res)=>{
     res.render("login");
 });
@@ -104,9 +107,8 @@ app.get("/register", (req, res)=>{
     res.render("register");
 });
 
-app.post("/register", (req, res)=>{
-    ensureLogin(req, res, next);
-    
+app.post("/register", (req, res, next)=>{
+    ensureLogin(req, res);
     
     dataServiceAuth.registerUser(req.body).then((data)=>{
         res.render("register", {successMessage: "User created"});

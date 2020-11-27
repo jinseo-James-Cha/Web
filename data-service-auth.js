@@ -1,4 +1,4 @@
-
+const bcrypt = require('bcryptjs');
 var mongoose = require("mongoose");
 var Schema = mongoose.Schema;
 
@@ -31,33 +31,37 @@ module.exports.initialize = function() {
         
         var pass = encodeURIComponent("Wlstjck2!"); // this step is needed if there are special characters in your password, ie "$"
 
-        var uri = "mongodb+srv://dbUser:Wlstjck2!@senecaweb.03yn7.mongodb.net/web322_week8?retryWrites=true&w=majority";
+        var url = "mongodb+srv://dbUser:Wlstjck2!@senecaweb.03yn7.mongodb.net/web322_week8?retryWrites=true&w=majority";
         
-        mongoose.connect(`mongodb+srv://dbUser:${pass}@senecaweb.03yn7.mongodb.net/web322_week8?retryWrites=true&w=majority`, {useNewUrlParser : true, useUnifiedTopology: true}, function(error){
-            
+
+        //mongoose.connect(`mongodb+srv://dbUser:${pass}@senecaweb.03yn7.mongodb.net/web322_week8?retryWrites=true&w=majority`, {useNewUrlParser : true, useUnifiedTopology: true});
+        //mongoose.set('useCreateIndex', true);    
             //above line is error//
             //console.log("JAMES");
-            if(error) reject(error);
-            else {
-                console.log("connection successful");
 
-                var db = mongoose.createConnection(`mongodb+srv://dbUser:${pass}@senecaweb.03yn7.mongodb.net/web322_week8?retryWrites=true&w=majority`,{useNewUrlParser : true, useUnifiedTopology: true});
-                
-                db.on('error', (err)=>{
+            mongoose.connect(`mongodb+srv://dbUser:${pass}@senecaweb.03yn7.mongodb.net/web322_week8?retryWrites=true&w=majority`, {useNewUrlParser : true, useUnifiedTopology: true}, function(error){
+            //mongoose.set('useCreateIndex', true);
+                if(error) reject(error);
+                else {
+                    console.log("connection successful");
+    
+                    var db = mongoose.createConnection(`mongodb+srv://dbUser:${pass}@senecaweb.03yn7.mongodb.net/web322_week8?retryWrites=true&w=majority`,{useNewUrlParser : true, useUnifiedTopology: true});
                     
-                    reject(err);
-                });
-                  
-                db.once('open', ()=>{
-                    
-                    User = db.model("users", userSchema);
-                    resolve();
-                });
-
-            }
-        }).catch(function (error) {
-            reject(error);
-        });
+                    db.on('error', (err)=>{
+                        
+                        reject(err);
+                    });
+                      
+                    db.once('open', ()=>{
+                        
+                        User = db.model("users", userSchema);
+                        resolve();
+                    });
+                }
+                            
+            });
+            
+        
     });
 }
 
@@ -75,6 +79,19 @@ module.exports.registerUser = function(userData){
             reject("Error: Passwords do not match");
         }
         else{
+
+            bcrypt.genSalt(10, function(err, salt) { 
+                bcrypt.hash(userData.password, salt, function(err, hashValue) { 
+                    userData.password = hashValue;
+                }).catch(err=>{
+                    console.log(err);
+                    reject("There was an error encrypting the password");
+                });
+           }).catch(err=>{
+               console.log(err);
+               reject("There was an error encrypting the password");
+           });
+
             let newUser = new User(userData);
             newUser.save((err) =>{
                 if(err && err.code == 11000){
@@ -96,15 +113,23 @@ module.exports.registerUser = function(userData){
 module.exports.checkUser = function(userData){
     return new Promise(function (resolve, reject) {
         
+        var comparedPasswords;
+
         User.findOne({ userName: userData.userName})
         .exec()
         .then((foundUser) => {
+
+            bcrypt.compare(userData.password, foundUser.password).then((res) => {
+                // res === true if it matches and res === false if it does not match
+                comparedPasswords = res;
+            });
+
             if(!foundUser){
                 reject("Unable to find user: " + userData.userName);
                 //process.exit();
             }
-            else if(foundUser.password != userData.password){
-                reject("Incorrect Password for user: " + userData.userName);
+            else if(!comparedPasswords){
+                reject("Unable to find user: " + userData.userName);
             }
             else{
                 foundUser.loginHistory.push({dateTime: (new Date()).toString(), userAgent: userData.userAgent});
