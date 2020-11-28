@@ -81,36 +81,34 @@ module.exports.registerUser = function(userData){
         }
         else{
             
-            bcrypt.genSalt(10, function(err, salt) { 
-                console.log("James1");
+            bcrypt.genSalt(10, function(err, salt) {
+                if(err) reject("There was an error encrypting the password"); 
                 bcrypt.hash(userData.password, salt, function(err, hashValue) {
-                    console.log("James2");
-                    if(err) {
-                        reject("There was an error encrypting the password");
-                    }
+                    if(err) reject("There was an error encrypting the password");
+                    
                     else{
+                        
                         userData.password = hashValue;
+                        console.log(userData.password);
+
+                        let newUser = new User(userData);
+                        console.log(newUser.password);
+        
+                        newUser.save((err) =>{
+                        
+                            if(err && err.code == 11000){
+                                reject("User Name already taken");
+                            }
+                            else if(err && err.code != 11000){
+                                reject("There was an error creating the user: " + err);
+                            }
+                            else{
+                                resolve();
+                            }        
+                        });
                     }
                 });
-                if(err) {
-                    reject("There was an error encrypting the password");
-                }
-           });
-
-            let newUser = new User(userData);
-            newUser.save((err) =>{
-                if(err && err.code == 11000){
-                    reject("User Name already taken");
-                }
-                else if(err && err.code != 11000){
-                    reject("There was an error creating the user: " + err);
-                }
-                else{
-                    resolve();
-                }
-                
             });
-            process.exit();
         }
     });
 }
@@ -126,9 +124,16 @@ module.exports.checkUser = function(userData){
 
             bcrypt.compare(userData.password, foundUser.password).then((res) => {
                 // res === true if it matches and res === false if it does not match
+                console.log("compared");
                 comparedPasswords = res;
+                console.log(comparedPasswords);
             });
-
+            
+            
+           
+            
+        }).then(() =>{
+            console.log("founduser");
             if(!foundUser){
                 reject("Unable to find user: " + userData.userName);
                 //process.exit();
