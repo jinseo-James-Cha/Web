@@ -9,10 +9,10 @@ var userSchema = new Schema({
   },
   "password": String,
   "email": String,
-  "loginHistory": {
-    "dataTime": Date,
+  "loginHistory": [{
+    "dateTime": Date,
     "userAgent": String
-  } 
+  }] 
 });
 
 let User;
@@ -89,10 +89,10 @@ module.exports.registerUser = function(userData){
                     else{
                         
                         userData.password = hashValue;
-                        console.log(userData.password);
+                        
 
                         let newUser = new User(userData);
-                        console.log(newUser.password);
+                        
         
                         newUser.save((err) =>{
                         
@@ -116,43 +116,44 @@ module.exports.registerUser = function(userData){
 module.exports.checkUser = function(userData){
     return new Promise(function (resolve, reject) {
         
-        var comparedPasswords;
+        
 
         User.findOne({ userName: userData.userName})
         .exec()
         .then((foundUser) => {
 
-            bcrypt.compare(userData.password, foundUser.password).then((res) => {
-                // res === true if it matches and res === false if it does not match
-                console.log("compared");
-                comparedPasswords = res;
-                console.log(comparedPasswords);
-            });
             
-            
-           
-            
-        }).then(() =>{
-            console.log("founduser");
             if(!foundUser){
                 reject("Unable to find user: " + userData.userName);
                 //process.exit();
             }
-            else if(!comparedPasswords){
-                reject("Unable to find user: " + userData.userName);
-            }
-            else{
-                foundUser.loginHistory.push({dateTime: (new Date()).toString(), userAgent: userData.userAgent});
-        
-                User.updateOne(
-                    { userName: foundUser.userName},
-                    { $set: { loginHistory: foundUser.loginHistory } }
-                )
-                .exec()
-                .then(()=>{
-                    resolve(foundUser);
-                }).catch((err)=>{
-                    reject("There was an error verifying the user: " + err);
+            else {
+                //reject("Unable to find user: " + userData.userName);
+            
+                bcrypt.compare(userData.password, foundUser.password).then((res) => {
+                    // res === true if it matches and res === false if it does not match
+                    if(res === false) {
+                        console.log("comparefalse");
+                        reject("Incorrect Password for user: " + userData.userName);
+                    }
+                    else{
+                        
+                        foundUser.loginHistory.push( {dateTime: (new Date()).toString(), userAgent: userData.userAgent});
+                        
+                        
+                        User.updateOne(
+                            { userName: foundUser.userName},
+                            { $set: { loginHistory: foundUser.loginHistory } }
+                        )
+                        .exec()
+                        .then(()=>{
+                            console.log("good");
+                            resolve(foundUser);
+                         }).catch((err)=>{
+                            console.log("bad");
+                            reject("There was an error verifying the user: " + err);
+                        });
+                    }
                 });
             }
         }).catch((err)=>{
