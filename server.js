@@ -1,4 +1,5 @@
 /*********************************************************************************
+* 
 * BTI325 – Assignment 6
 * I declare that this assignment is my own work in accordance with Seneca Academic Policy. No part
 * of this assignment has been copied manually or electronically from any other source
@@ -7,7 +8,7 @@
 * Name: Jinseo Cha Student ID: 063262141 Date: Nov 22th,2020
 *
 * Online (Heroku) Link: https://stormy-brook-59477.herokuapp.com/
-*
+* git practice
 ********************************************************************************/ 
 var clientSessions = require("client-sessions");
 //var dataServiceAuth = require("data-service-auth.js");
