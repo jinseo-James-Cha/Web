@@ -14,6 +14,8 @@ var clientSessions = require("client-sessions");
 //var dataServiceAuth = require("data-service-auth.js");
 var dataServiceAuth = require("./data-service-auth.js");
 
+
+var git = 0;
 var path = require("path");
 var express = require("express");
 var multer = require("multer");
